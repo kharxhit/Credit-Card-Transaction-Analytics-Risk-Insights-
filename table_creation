@@ -1,0 +1,8 @@
+CREATE TABLE credit_card_transactions (
+    transaction_id INT PRIMARY KEY,
+    transaction_time INT,
+    transaction_amount DECIMAL(10,2),
+    merchant_category VARCHAR(50),
+    customer_id INT,
+    is_fraud INT
+);
