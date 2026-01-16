@@ -1,0 +1,118 @@
+1. Total Transactions & Spend
+SELECT 
+    COUNT(*) AS total_transactions,
+    SUM(transaction_amount) AS total_spend
+FROM credit_card_transactions;
+
+
+2. Fraud Rate
+SELECT 
+    ROUND(100.0 * SUM(is_fraud) / COUNT(*), 2) AS fraud_rate_percentage
+FROM credit_card_transactions;
+
+
+3. Fraud vs Non-Fraud Spend
+SELECT 
+    is_fraud,
+    COUNT(*) AS transactions,
+    SUM(transaction_amount) AS total_spend
+FROM credit_card_transactions
+GROUP BY is_fraud;
+
+
+4. High-Risk Transaction Amount Bands
+SELECT 
+    CASE 
+        WHEN transaction_amount < 50 THEN 'Low'
+        WHEN transaction_amount BETWEEN 50 AND 200 THEN 'Medium'
+        ELSE 'High'
+    END AS amount_band,
+    COUNT(*) AS total_transactions,
+    SUM(is_fraud) AS fraud_transactions
+FROM credit_card_transactions
+GROUP BY amount_band;
+
+
+5. Fraud Rate by Merchant Category
+SELECT 
+    merchant_category,
+    COUNT(*) AS transactions,
+    SUM(is_fraud) AS fraud_cases
+FROM credit_card_transactions
+GROUP BY merchant_category
+ORDER BY fraud_cases DESC;
+
+
+6. Top 10 Risky Customers
+SELECT 
+    customer_id,
+    COUNT(*) AS transactions,
+    SUM(is_fraud) AS fraud_cases
+FROM credit_card_transactions
+GROUP BY customer_id
+HAVING SUM(is_fraud) > 0
+ORDER BY fraud_cases DESC
+LIMIT 10;
+
+
+7. High-Value Customers (Spend-Based)
+SELECT 
+    customer_id,
+    SUM(transaction_amount) AS total_spend
+FROM credit_card_transactions
+GROUP BY customer_id
+ORDER BY total_spend DESC
+LIMIT 10;
+
+
+8. Time-Based Fraud Pattern
+SELECT 
+    transaction_time,
+    COUNT(*) AS total_transactions,
+    SUM(is_fraud) AS fraud_cases
+FROM credit_card_transactions
+GROUP BY transaction_time
+ORDER BY fraud_cases DESC;
+
+
+9. Fraud Concentration (% of Total Fraud)
+SELECT 
+    merchant_category,
+    ROUND(100.0 * SUM(is_fraud) / 
+        (SELECT SUM(is_fraud) FROM credit_card_transactions), 2) AS fraud_percentage
+FROM credit_card_transactions
+GROUP BY merchant_category
+ORDER BY fraud_percentage DESC;
+
+
+10. Rolling 7-Transaction Fraud Rate
+SELECT 
+    transaction_id,
+    transaction_amount,
+    is_fraud,
+    AVG(is_fraud) OVER (
+        ORDER BY transaction_id
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    ) AS rolling_fraud_rate
+FROM credit_card_transactions;
+
+
+11. Customers with High Fraud Ratio
+SELECT 
+    customer_id,
+    COUNT(*) AS total_transactions,
+    SUM(is_fraud) AS fraud_transactions,
+    ROUND(1.0 * SUM(is_fraud) / COUNT(*), 2) AS fraud_ratio
+FROM credit_card_transactions
+GROUP BY customer_id
+HAVING fraud_ratio > 0.3;
+
+
+12. KPI Summary View (VERY INTERVIEW-FRIENDLY)
+SELECT
+    COUNT(*) AS total_transactions,
+    SUM(transaction_amount) AS total_spend,
+    SUM(is_fraud) AS total_fraud_cases,
+    ROUND(100.0 * SUM(is_fraud) / COUNT(*), 2) AS fraud_rate
+FROM credit_card_transactions;
+
